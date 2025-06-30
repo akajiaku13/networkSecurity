@@ -20,3 +20,30 @@ jobs:
 
             - name: Run unit tests
               run: echo "Running unit tests"
+    
+    build-and-push-image:
+        name: Continuous Delivery
+        needs: integration
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            
+            - name: Install utilities
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y jq unzip
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                username: ${{ secrets.DOCKERHUB_USERNAME }}
+                password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            # Build and push to Docker Hub
+            - name: Build and push Docker image to Docker Hub
+              uses: docker/build-push-action@v5
+              with:
+                context: .
+                push: true
+                tags: rebelng/networksecurity:latest
